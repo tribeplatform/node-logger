@@ -1,15 +1,12 @@
 import { format } from "logform";
 import { LoggerOptions, transports } from "winston";
 
-import { LoggerLevel } from "./interface";
+import { LogFormat, LoggerLevel } from "./interface";
 import { getColorizedText } from "./utils";
 
 export const WINSTON_MODULE_PROVIDER = "winston";
-export type PrettyFormatterInput = {
-  pid?: boolean;
-  prefix?: string;
-};
-export const prettyFormatter = (options: PrettyFormatterInput) =>
+
+export const prettyFormatter = (options: LogFormat) =>
   format.combine(
     format.timestamp({
       format: "MM/DD/YYYY, h:mm:ss A",
@@ -54,7 +51,7 @@ export const jsonFormatter = format.combine(
 export const getLoggerConfig = (options: {
   level?: LoggerLevel;
   pretty?: boolean;
-  formatter?: PrettyFormatterInput;
+  formatter?: LogFormat;
 }): LoggerOptions => {
   const {
     level = process.env.LOGGER_LEVEL || "info",
