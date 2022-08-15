@@ -52,14 +52,11 @@ export const getLoggerConfig = (options: {
   level?: LoggerLevel;
   pretty?: boolean;
   formatter?: LogFormat;
+  debug?: boolean;
 }): LoggerOptions => {
   const {
-    level = process.env.LOGGER_LEVEL || "info",
-    pretty = process.env.LOGGER_PRETTY_PRINT
-      ? process.env.LOGGER_PRETTY_PRINT === "true"
-      : process.env.NODE_ENV === "production"
-      ? false
-      : true,
+    level = options?.level || "info",
+    pretty = options.pretty,
     formatter = {
       pid: true,
       prefix: 'Logger'
