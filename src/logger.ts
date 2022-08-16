@@ -1,55 +1,53 @@
-import { AxiosError } from 'axios'
-import { Logger as WinstonLogger, createLogger } from 'winston'
+import { AxiosError } from "axios";
+import { Logger as WinstonLogger, createLogger } from "winston";
 
-import {  getLoggerConfig } from './constants'
-import { LogFormat } from './interface'
-
+import { getLoggerConfig } from "./constants";
+import { LogFormat, LoggerLevel } from "./interface";
+type LoggerInput = {
+  level?: LoggerLevel;
+  pretty?: boolean;
+  format?: LogFormat;
+  debug?: boolean;
+  context?: string;
+};
 export class Logger {
-  static _logger: WinstonLogger
+  private readonly logger: WinstonLogger;
+  context: string;
 
-  context: string
-  format: LogFormat
-
-  constructor(
-    private readonly logger: WinstonLogger = createLogger(getLoggerConfig({})),
-  ) {
-    this.context = 'WithoutContext'
-    this.format = {}
+  constructor(options: LoggerInput) {
+    this.logger = createLogger(getLoggerConfig(options))
+    this.context = options?.context || 'WithoutContext'
   }
 
-  setContext(context: string) {
+  setContext(context: string){
     this.context = context
   }
 
-  setLogFormat(format: LogFormat){
-    this.format = format
-  }
-
   static getCleanedMeta(meta: any[], extraMeta: Record<string, any>): any[] {
-    const cleanedMeta = [...meta]
+    const cleanedMeta = [...meta];
     if (cleanedMeta[0]) {
       switch (typeof cleanedMeta[0]) {
-        case 'string':
-          cleanedMeta[0] = { ...extraMeta, context: cleanedMeta[0] }
-          break
-        case 'object':
-          cleanedMeta[0] = { ...extraMeta, ...cleanedMeta[0] }
-          break
+        case "string":
+          cleanedMeta[0] = { ...extraMeta, context: cleanedMeta[0] };
+          break;
+        case "object":
+          cleanedMeta[0] = { ...extraMeta, ...cleanedMeta[0] };
+          break;
       }
     } else {
-      cleanedMeta[0] = { ...extraMeta }
+      cleanedMeta[0] = { ...extraMeta };
     }
-    return cleanedMeta
+    return cleanedMeta;
   }
 
   static getCleanedError(error: Error): {
-    message: string
-    stack?: string
-    errorDetail: Record<string, any>
+    message: string;
+    stack?: string;
+    errorDetail: Record<string, any>;
   } {
-    let errorDetail: Record<string, any>
-    if (error['isAxiosError']) {
-      const axiosError = error as AxiosError
+    let errorDetail: Record<string, any>;
+    if (error["isAxiosError"]) {
+      const axiosError = error as AxiosError;
       errorDetail = {
         code: axiosError.code,
         response: {
@@ -63,20 +61,20 @@ export class Logger {
           baseURL: axiosError.config.baseURL,
           timeout: axiosError.config.timeout,
         },
-      }
+      };
     } else {
-      let actualError = error['actualError']
+      let actualError = error["actualError"];
       if (actualError) {
-        actualError = this.getCleanedError(error['actualError'])
+        actualError = this.getCleanedError(error["actualError"]);
       }
 
-      let response = error['response']
+      let response = error["response"];
       if (response) {
-        let errorsList = response['errorsList']
+        let errorsList = response["errorsList"];
         if (errorsList) {
-          errorsList = errorsList.map(error => this.getCleanedError(error))
+          errorsList = errorsList.map((error) => this.getCleanedError(error));
         }
-        response = { ...response, errorsList }
+        response = { ...response, errorsList };
       }
 
       errorDetail = {
@@ -85,139 +83,93 @@ export class Logger {
         actualError,
         message: undefined,
         stack: undefined,
-      }
+      };
     }
     return {
       message: error.message,
       stack: error.stack,
       errorDetail,
-    }
+    };
   }
 
   static getCleanedMessage(
     message: any,
     meta: any[],
-    context?: string,
+    context?: string
   ): { cleanedMessage: any; cleanedMeta: any[] } {
-    let cleanedMessage = message
-    let cleanedMeta = meta
-    let extraMeta: Record<string, any> = { context }
+    let cleanedMessage = message;
+    let cleanedMeta = meta;
+    let extraMeta: Record<string, any> = { context };
 
-    if (typeof message === 'function') {
-      cleanedMessage = message()
+    if (typeof message === "function") {
+      cleanedMessage = message();
     }
     if (!cleanedMessage) {
-      cleanedMessage = ''
+      cleanedMessage = "";
     } else if (
       !(cleanedMessage instanceof Error) &&
-      typeof cleanedMessage === 'object'
+      typeof cleanedMessage === "object"
     ) {
-      cleanedMeta = [cleanedMessage, ...cleanedMeta]
-      cleanedMessage = ''
+      cleanedMeta = [cleanedMessage, ...cleanedMeta];
+      cleanedMessage = "";
     } else if (cleanedMessage instanceof Error) {
-      const error = this.getCleanedError(cleanedMessage)
+      const error = this.getCleanedError(cleanedMessage);
       extraMeta = {
         ...extraMeta,
         stack: error.stack,
         errorDetail: error.errorDetail,
-      }
-      cleanedMessage = error.message
+      };
+      cleanedMessage = error.message;
     }
 
     return {
       cleanedMessage,
       cleanedMeta: this.getCleanedMeta(cleanedMeta, extraMeta),
-    }
-  }
-
-  static getLogger(): WinstonLogger {
-    Logger._logger =
-    Logger._logger || createLogger(getLoggerConfig({}))
-    return Logger._logger
-  }
-
-  static debug(message: any, ...meta: any[]): void {
-    const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
-      message,
-      meta,
-    )
-    this.getLogger().debug(cleanedMessage, ...cleanedMeta)
-  }
-
-  static verbose(message: any, ...meta: any[]): void {
-    const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
-      message,
-      meta,
-    )
-    this.getLogger().verbose(cleanedMessage, ...cleanedMeta)
-  }
-
-  static log(message: any, ...meta: any[]): void {
-    const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
-      message,
-      meta,
-    )
-    this.getLogger().info(cleanedMessage, ...cleanedMeta)
-  }
-
-  static warn(message: any, ...meta: any[]): void {
-    const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
-      message,
-      meta,
-    )
-    this.getLogger().warn(cleanedMessage, ...cleanedMeta)
-  }
-
-  static error(message: any, ...meta: any[]): void {
-    const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
-      message,
-      meta,
-    )
-    this.getLogger().error(cleanedMessage, ...cleanedMeta)
+    };
   }
 
   verbose(message: any, ...meta: any[]): void {
     const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
       message,
       meta,
-      this.context,
-    )
-    this.logger.verbose(cleanedMessage, ...cleanedMeta)
+      this.context
+    );
+    this.logger.verbose(cleanedMessage, ...cleanedMeta);
   }
 
   debug(message: any, ...meta: any[]): void {
     const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
       message,
       meta,
-      this.context,
-    )
-    this.logger.debug(cleanedMessage, ...cleanedMeta)
+      this.context
+    );
+    this.logger.debug(cleanedMessage, ...cleanedMeta);
   }
 
   log(message: any, ...meta: any[]): void {
     const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
       message,
       meta,
-      this.context,
-    )
-    this.logger.info(cleanedMessage, ...cleanedMeta)
+      this.context
+    );
+    this.logger.info(cleanedMessage, ...cleanedMeta);
   }
 
   warn(message: any, ...meta: any[]): void {
     const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
       message,
       meta,
-      this.context,
-    )
-    this.logger.warn(cleanedMessage, ...cleanedMeta)
+      this.context
+    );
+    this.logger.warn(cleanedMessage, ...cleanedMeta);
   }
 
   error(message: any, ...meta: any[]): void {
     const { cleanedMessage, cleanedMeta } = Logger.getCleanedMessage(
       message,
       meta,
-      this.context,
-    )
-    this.logger.error(cleanedMessage, ...cleanedMeta)
+      this.context
+    );
+    this.logger.error(cleanedMessage, ...cleanedMeta);
   }
 }

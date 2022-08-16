@@ -17,7 +17,7 @@ export const prettyFormatter = (options: LogFormat) =>
       const label = getColorizedText(`[${info.metadata.context}]`, "warn");
       const loggerLevel = info.level as LoggerLevel;
       const processInfo = getColorizedText(
-        `[${options.prefix || "Logger"}] ${
+        `[${options?.prefix || "Logger"}] ${
           options?.pid ? process.pid : ""
         }   -`,
         loggerLevel
@@ -51,20 +51,20 @@ export const jsonFormatter = format.combine(
 export const getLoggerConfig = (options: {
   level?: LoggerLevel;
   pretty?: boolean;
-  formatter?: LogFormat;
+  format?: LogFormat;
   debug?: boolean;
-}): LoggerOptions => {
+} = {}): LoggerOptions => {
   const {
     level = options?.level || "info",
-    pretty = options.pretty,
-    formatter = {
+    pretty = options?.pretty,
+    format = {
       pid: true,
       prefix: 'Logger'
     }
   } = options;
   return {
     level,
-    format: pretty ? prettyFormatter(formatter) : jsonFormatter,
+    format: pretty ? prettyFormatter(format) : jsonFormatter,
     transports: [new transports.Console()],
     exceptionHandlers: [new transports.Console()],
   };
