@@ -14,7 +14,7 @@ export class Logger {
   private readonly logger: WinstonLogger;
   context: string;
 
-  constructor(options: LoggerInput) {
+  constructor(options: LoggerInput = {}) {
     this.logger = createLogger(getLoggerConfig(options))
     this.context = options?.context || 'WithoutContext'
   }
