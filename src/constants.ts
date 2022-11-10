@@ -1,27 +1,27 @@
-import { format } from "logform";
-import { LoggerOptions, transports } from "winston";
+import { Format, format } from 'logform'
+import { LoggerOptions, transports } from 'winston'
 
-import { LogFormat, LoggerLevel } from "./interface";
-import { getColorizedText } from "./utils";
+import { LogFormat, LoggerInput, LogLevel } from './interface'
+import { getColorizedText } from './utils'
 
-export const WINSTON_MODULE_PROVIDER = "winston";
+export const WINSTON_MODULE_PROVIDER = 'winston'
 
-export const prettyFormatter = (options: LogFormat) =>
-  format.combine(
+export const FORMATTERS: Record<LogFormat, Format> = {
+  pretty: format.combine(
     format.timestamp({
-      format: "MM/DD/YYYY, h:mm:ss A",
+      format: 'MM/DD/YYYY, h:mm:ss A',
     }),
     format.errors({ stack: true }),
     format.metadata(),
     format.printf(function (info) {
-      const label = getColorizedText(`[${info.metadata.context}]`, "warn");
-      const loggerLevel = info.level as LoggerLevel;
+      const label = info.metadata.context
+        ? getColorizedText(`[${info.metadata.context}]`, 'warn')
+        : null
+      const loggerLevel = info.level as LogLevel
       const processInfo = getColorizedText(
-        `[${options?.prefix || "Logger"}] ${
-          options?.pid ? process.pid : ""
-        }   -`,
-        loggerLevel
-      );
+        `${label ? `${label} ` : ''}${process.pid}   -`,
+        loggerLevel,
+      )
       const metadata = JSON.stringify(
         {
           ...info.metadata,
@@ -31,41 +31,26 @@ export const prettyFormatter = (options: LogFormat) =>
           stack: undefined,
         },
         null,
-        2
-      );
+        2,
+      )
       const message = getColorizedText(
         `${info.metadata.stack ? info.metadata.stack : info.message}`,
-        loggerLevel
-      );
-      const detail = `${metadata === "{}" ? "" : ` ${metadata}`}`;
-      return `${processInfo} ${info.metadata.timestamp}   ${label} ${message}${detail}`;
-    })
-  );
+        loggerLevel,
+      )
+      const detail = `${metadata === '{}' ? '' : ` ${metadata}`}`
+      return `${processInfo} ${info.metadata.timestamp}   ${label} ${message}${detail}`
+    }),
+  ),
+  json: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
+}
 
-export const jsonFormatter = format.combine(
-  format.timestamp(),
-  format.errors({ stack: true }),
-  format.json()
-);
-
-export const getLoggerConfig = (options: {
-  level?: LoggerLevel;
-  pretty?: boolean;
-  format?: LogFormat;
-  debug?: boolean;
-} = {}): LoggerOptions => {
-  const {
-    level = options?.level || "info",
-    pretty = options?.pretty,
-    format = {
-      pid: true,
-      prefix: 'Logger'
-    }
-  } = options;
+export const getLoggerConfig = (options: LoggerInput): LoggerOptions => {
+  const { level = options?.level || 'info', format = options?.format || 'pretty' } =
+    options
   return {
     level,
-    format: pretty ? prettyFormatter(format) : jsonFormatter,
+    format: FORMATTERS[format],
     transports: [new transports.Console()],
     exceptionHandlers: [new transports.Console()],
-  };
-};
+  }
+}

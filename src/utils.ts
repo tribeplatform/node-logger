@@ -1,4 +1,4 @@
-import { LoggerLevel } from './interface'
+import { LogLevel } from './interface'
 
 const NO_COLOR = '\u001b[39m'
 const MAGENTA = '\u001b[35m'
@@ -7,7 +7,7 @@ const GREEN = '\u001b[32m'
 const YELLOW = '\u001b[33m'
 const RED = '\u001b[31m'
 
-const getLevelColor = (level: LoggerLevel): string => {
+const getLevelColor = (level: LogLevel): string => {
   switch (level) {
     case 'debug':
       return MAGENTA
@@ -24,5 +24,5 @@ const getLevelColor = (level: LoggerLevel): string => {
   }
 }
 
-export const getColorizedText = (text: string, level: LoggerLevel) =>
+export const getColorizedText = (text: string, level: LogLevel) =>
   `${getLevelColor(level)}${text}${NO_COLOR}`
