@@ -38,7 +38,7 @@ export const FORMATTERS: Record<LogFormat, Format> = {
         loggerLevel,
       )
       const detail = `${metadata === '{}' ? '' : ` ${metadata}`}`
-      return `${processInfo} ${info.metadata.timestamp}   ${label} ${message}${detail}`
+      return `${processInfo} ${info.metadata.timestamp}  ${message}${detail}`
     }),
   ),
   json: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
