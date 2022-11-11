@@ -2,7 +2,7 @@ import { Format, format } from 'logform'
 import { LoggerOptions, transports } from 'winston'
 
 import { LogFormat, LoggerInput, LogLevel } from './interface'
-import { getColorizedText } from './utils'
+import { getColorizedText, getContextText } from './utils'
 
 export const WINSTON_MODULE_PROVIDER = 'winston'
 
@@ -15,9 +15,7 @@ export const FORMATTERS: Record<LogFormat, Format> = {
     format.metadata(),
     format.printf(function (info) {
       const level = info.level as LogLevel
-      const label = info.metadata.context ? `[${info.metadata.context}] ` : ''
-      const processInfo = getColorizedText(`${label}(${level.toUpperCase()}) -`, level)
-
+      const context = `${getContextText(info.metadata.context || 'unknown')}`
       const metadata = JSON.stringify(
         {
           ...info.metadata,
@@ -30,7 +28,9 @@ export const FORMATTERS: Record<LogFormat, Format> = {
         2,
       )
       const message = getColorizedText(
-        `${info.metadata.stack ? info.metadata.stack : info.message}`,
+        `(${level.toUpperCase()}) - ${
+          info.metadata.stack ? info.metadata.stack : info.message
+        }`,
         level,
       )
       const detail = getColorizedText(
@@ -38,7 +38,7 @@ export const FORMATTERS: Record<LogFormat, Format> = {
         'meta',
       )
 
-      return `${processInfo} ${info.metadata.timestamp}  ${message}${detail}`
+      return `${context} - ${info.metadata.timestamp} ${message}${detail}`
     }),
   ),
   json: format.combine(format.timestamp(), format.errors({ stack: true }), format.json()),
