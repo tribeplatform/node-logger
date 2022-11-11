@@ -2,16 +2,10 @@ import * as chalk from 'chalk'
 import { LogLevel } from './interface'
 
 export const getContextText = (context: string): string => {
-  let whiteSpaces = ''
-  if (context.length < 10) {
-    whiteSpaces = ' '.repeat(10 - context.length)
-  } else if (context.length < 20) {
-    whiteSpaces = ' '.repeat(20 - context.length)
-  } else if (context.length < 30) {
-    whiteSpaces = ' '.repeat(30 - context.length)
+  if (!context) {
+    return ''
   }
-
-  return chalk.yellow(`[${context}]${whiteSpaces}`)
+  return `[${context}] `
 }
 
 export const getLevelText = (level: LogLevel): string => {

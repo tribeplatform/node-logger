@@ -1,6 +1,6 @@
 import { Logger } from './logger'
 
-const logger = new Logger({ level: 'debug' })
+const logger = new Logger({ applicationName: 'aragorn', level: 'debug' })
 
 logger.log('hello world')
 

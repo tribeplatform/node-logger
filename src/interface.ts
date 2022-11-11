@@ -8,6 +8,7 @@ export interface LoggerConfig {
 }
 
 export declare type LoggerInput = {
+  applicationName: string
   level?: LogLevel
   format?: LogFormat
   context?: string
