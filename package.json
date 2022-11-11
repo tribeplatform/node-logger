@@ -1,6 +1,6 @@
 {
   "name": "@tribeplatform/node-logger",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A simple logger library which extends winston",
   "main": "dist/index.js",
   "scripts": {
