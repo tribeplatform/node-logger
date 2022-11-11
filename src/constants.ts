@@ -35,7 +35,7 @@ export const FORMATTERS: Record<LogFormat, Format> = {
       )
       const detail = getColorizedText(
         `${metadata === '{}' ? '' : ` ${metadata}`}`,
-        'debug',
+        'meta',
       )
 
       return `${processInfo} ${info.metadata.timestamp}  ${message}${detail}`
