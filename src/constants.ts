@@ -16,7 +16,7 @@ export const FORMATTERS: Record<LogFormat, Format> = {
     format.printf(function (info) {
       const level = info.level as LogLevel
       const label = info.metadata.context ? `[${info.metadata.context}] ` : ''
-      const processInfo = getColorizedText(`${label}(${level}) -`, level)
+      const processInfo = getColorizedText(`${label}(${level.toUpperCase()}) -`, level)
 
       const metadata = JSON.stringify(
         {

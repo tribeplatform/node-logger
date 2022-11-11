@@ -1,9 +1,10 @@
 {
   "name": "@tribeplatform/node-logger",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A simple logger library which extends winston",
   "main": "dist/index.js",
   "scripts": {
+    "dev": "node dist/test.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "build:watch": "tsc -w",
