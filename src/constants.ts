@@ -14,14 +14,10 @@ export const FORMATTERS: Record<LogFormat, Format> = {
     format.errors({ stack: true }),
     format.metadata(),
     format.printf(function (info) {
-      const label = info.metadata.context
-        ? getColorizedText(`[${info.metadata.context}]`, 'warn')
-        : null
-      const loggerLevel = info.level as LogLevel
-      const processInfo = getColorizedText(
-        `${label ? `${label} ` : ''}${process.pid}   -`,
-        loggerLevel,
-      )
+      const level = info.level as LogLevel
+      const label = info.metadata.context ? `[${info.metadata.context}] ` : ''
+      const processInfo = getColorizedText(`${label}(${level}) - `, level)
+
       const metadata = JSON.stringify(
         {
           ...info.metadata,
@@ -35,9 +31,13 @@ export const FORMATTERS: Record<LogFormat, Format> = {
       )
       const message = getColorizedText(
         `${info.metadata.stack ? info.metadata.stack : info.message}`,
-        loggerLevel,
+        level,
       )
-      const detail = `${metadata === '{}' ? '' : ` ${metadata}`}`
+      const detail = getColorizedText(
+        `${metadata === '{}' ? '' : ` ${metadata}`}`,
+        'debug',
+      )
+
       return `${processInfo} ${info.metadata.timestamp}  ${message}${detail}`
     }),
   ),
