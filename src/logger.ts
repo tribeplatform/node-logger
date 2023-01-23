@@ -6,15 +6,22 @@ import { LoggerInput } from './interface'
 
 export class Logger {
   private readonly logger: WinstonLogger
+  private applicationName: string
   context?: string
 
   constructor(options: LoggerInput) {
-    this.logger = createLogger(getLoggerConfig(options))
-    this.context = options?.context
+    const { logger, context, ...winstonOptions } = options
+    this.applicationName = options.applicationName
+    this.logger = logger || createLogger(getLoggerConfig(winstonOptions))
+    this.context = context
   }
 
   setContext(context: string) {
-    this.context = context
+    return new Logger({
+      applicationName: this.applicationName,
+      logger: this.logger,
+      context,
+    })
   }
 
   static getCleanedMeta(meta: any[], extraMeta: Record<string, any>): any[] {

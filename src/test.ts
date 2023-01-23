@@ -2,32 +2,27 @@ import { Logger } from './logger'
 
 const logger = new Logger({ applicationName: 'aragorn', level: 'debug' })
 
-logger.log('hello world')
+// Test EventEmitter memory leak issue
+const loggers = []
+for (let i = 0; i < 100; i++) {
+  loggers.push(logger.setContext('Server'))
+}
 
-logger.setContext('Server')
-
-logger.debug('Hello world!')
-
-logger.setContext('Unknown 2')
-
-logger.verbose('Hello world!')
-
-logger.setContext('Unknown Foo')
-
-logger.verbose('Hello world!')
-
-logger.setContext('WebhookController')
-
-logger.info('Hello world!')
-logger.warn('Hello world!')
-
-logger.setContext('InfoService')
-
-const err = new Error('Hello world!')
-logger.error(err, { foo: 'bar' })
-
-logger.setContext(
+const serverLogger = logger.setContext('Server')
+const unknownLogger = logger.setContext('Unknown 2')
+const unknown2Logger = logger.setContext('Unknown Foo')
+const webhookLogger = logger.setContext('WebhookController')
+const infoLogger = logger.setContext('InfoService')
+const contextLogger = logger.setContext(
   'This is some random context to check if the context is being set correctly',
 )
 
-logger.info('Hello world!')
+logger.log('hello world')
+serverLogger.debug('Hello world!')
+unknownLogger.verbose('Hello world!')
+unknown2Logger.verbose('Hello world!')
+webhookLogger.info('Hello world!')
+webhookLogger.warn('Hello world!')
+const err = new Error('Hello world!')
+infoLogger.error(err, { foo: 'bar' })
+contextLogger.info('Hello world!')
